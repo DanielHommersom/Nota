@@ -1,0 +1,38 @@
+import type { Customer, Invoice } from "./types";
+
+/**
+ * Local mock data for the front-end baseline. No backend is wired up yet —
+ * T1-T3 (DB schema, compliance module, send API route) are separate,
+ * tracked implementation tasks from /plan-eng-review.
+ */
+export const MOCK_CUSTOMERS: Customer[] = [
+  { id: "cust_melvin", name: "Melvin de Boer", isBusiness: false },
+  { id: "cust_casper", name: "Casper Jansen (boekhouder)", isBusiness: true, kvkNummer: "12345678", btwNummer: "NL123456789B01" },
+];
+
+export const MOCK_INVOICES: Invoice[] = [
+  {
+    id: "inv_1",
+    invoiceNumber: "2026-014",
+    customer: MOCK_CUSTOMERS[0],
+    description: "Stucwerk woonkamer",
+    quantity: 1,
+    unitPriceCents: 45000,
+    vatRate: 21,
+    totalCents: 54450,
+    status: "sent",
+    sentAt: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
+  },
+  {
+    id: "inv_2",
+    invoiceNumber: "2026-013",
+    customer: MOCK_CUSTOMERS[1],
+    description: "Gevel schilderen",
+    quantity: 1,
+    unitPriceCents: 89000,
+    vatRate: 21,
+    totalCents: 107690,
+    status: "sent",
+    sentAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+  },
+];
