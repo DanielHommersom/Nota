@@ -2,6 +2,12 @@
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
+  // "class" (not the "media" default) is required for NativeWind on web —
+  // Expo Router calls Appearance.setColorScheme during web hydration, which
+  // NativeWind only permits under "class" mode. The design doc locks a
+  // single light theme (app.json userInterfaceStyle: "light"), so this
+  // never actually toggles anything — it just stops the crash.
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
