@@ -6,8 +6,7 @@ import { VAT_RATES } from "@/lib/vat";
  * Pass 2 (Issue 3): the Send button stays disabled until this passes,
  * rather than a silent no-op tap that invites repeated taps.
  */
-export const invoiceFormSchema = z.object({
-  customerId: z.string({ error: "Kies een klant" }).min(1, "Kies een klant"),
+export const invoiceItemFormSchema = z.object({
   description: z
     .string({ error: "Vul een omschrijving in" })
     .trim()
@@ -20,4 +19,12 @@ export const invoiceFormSchema = z.object({
   vatRate: z.union([z.literal(0), z.literal(9), z.literal(21)]).refine((v) => VAT_RATES.includes(v)),
 });
 
+export const invoiceFormSchema = z.object({
+  customerId: z.string({ error: "Kies een klant" }).min(1, "Kies een klant"),
+  // An invoice always has at least one line item — mirrors the InvoiceItems
+  // table being one-to-many, not a single flat description/price pair.
+  items: z.array(invoiceItemFormSchema).min(1, "Voeg minimaal één regel toe"),
+});
+
+export type InvoiceItemFormValues = z.infer<typeof invoiceItemFormSchema>;
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;

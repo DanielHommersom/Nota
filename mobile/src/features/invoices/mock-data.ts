@@ -15,10 +15,9 @@ export const MOCK_INVOICES: Invoice[] = [
     id: "inv_1",
     invoiceNumber: "2026-014",
     customer: MOCK_CUSTOMERS[0],
-    description: "Stucwerk woonkamer",
-    quantity: 1,
-    unitPriceCents: 45000,
-    vatRate: 21,
+    items: [
+      { id: "item_1a", description: "Stucwerk woonkamer", quantity: 1, unitPriceCents: 45000, vatRate: 21 },
+    ],
     totalCents: 54450,
     status: "sent",
     sentAt: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
@@ -27,10 +26,12 @@ export const MOCK_INVOICES: Invoice[] = [
     id: "inv_2",
     invoiceNumber: "2026-013",
     customer: MOCK_CUSTOMERS[1],
-    description: "Gevel schilderen",
-    quantity: 1,
-    unitPriceCents: 89000,
-    vatRate: 21,
+    // Two-line example on purpose — demonstrates a real multi-item invoice
+    // (materials + labor on the same job), not just the single-line case.
+    items: [
+      { id: "item_2a", description: "Verf en materiaal", quantity: 1, unitPriceCents: 25000, vatRate: 21 },
+      { id: "item_2b", description: "Arbeid gevel schilderen", quantity: 1, unitPriceCents: 64000, vatRate: 21 },
+    ],
     totalCents: 107690,
     status: "sent",
     sentAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),

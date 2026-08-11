@@ -10,14 +10,42 @@ export type VatRate = (typeof VAT_RATES)[number];
 
 export const DEFAULT_VAT_RATE: VatRate = 21;
 
-export function calculateTotalCents(unitPriceCents: number, quantity: number, vatRate: VatRate): {
+export type LineItemAmounts = { unitPriceCents: number; quantity: number; vatRate: VatRate };
+
+export function calculateItemTotal(item: LineItemAmounts): {
   subtotalCents: number;
   vatCents: number;
   totalCents: number;
 } {
-  const subtotalCents = Math.round(unitPriceCents * quantity);
-  const vatCents = Math.round(subtotalCents * (vatRate / 100));
+  const subtotalCents = Math.round(item.unitPriceCents * item.quantity);
+  const vatCents = Math.round(subtotalCents * (item.vatRate / 100));
   return { subtotalCents, vatCents, totalCents: subtotalCents + vatCents };
+}
+
+/**
+ * Sums totals across every line item on an invoice. Dutch invoices can
+ * legitimately mix VAT rates across lines (e.g. materials at 21%, a 9%
+ * item), so this also breaks VAT down per rate for display — a single
+ * "X% VAT" line is only correct when every item shares one rate.
+ */
+export function calculateInvoiceTotals(items: LineItemAmounts[]): {
+  subtotalCents: number;
+  vatCents: number;
+  totalCents: number;
+  vatByRate: Partial<Record<VatRate, number>>;
+} {
+  let subtotalCents = 0;
+  let vatCents = 0;
+  const vatByRate: Partial<Record<VatRate, number>> = {};
+
+  for (const item of items) {
+    const itemTotal = calculateItemTotal(item);
+    subtotalCents += itemTotal.subtotalCents;
+    vatCents += itemTotal.vatCents;
+    vatByRate[item.vatRate] = (vatByRate[item.vatRate] ?? 0) + itemTotal.vatCents;
+  }
+
+  return { subtotalCents, vatCents, totalCents: subtotalCents + vatCents, vatByRate };
 }
 
 /**
