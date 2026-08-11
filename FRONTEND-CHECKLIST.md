@@ -9,12 +9,14 @@ worth reading even if you think you already know what's built.
 
 ## 0. What's already built
 
-Invoice list (home, with empty state) · invoice create (manual entry, one line item,
-inline validation, live VAT/total, send states incl. failed/offline banners, spinner→
-checkmark send animation, success screen) · invoice detail (read-only) · stub screens
-for sign-in, company onboarding (incl. plain-language KOR toggle), and new-customer.
-Design tokens, accessibility baseline (44px targets, VoiceOver labels, contrast-fixed
-muted gray), Lucide icons, native system font — all locked from `/plan-design-review`.
+Invoice list (home, with empty state) · invoice create (manual entry, **multiple line
+items** with add/remove, inline validation, live VAT/total with per-rate breakdown for
+mixed-rate invoices, send states incl. failed/offline banners, spinner→checkmark send
+animation, success screen) · invoice detail (read-only, lists all line items) · stub
+screens for sign-in, company onboarding (incl. plain-language KOR toggle), and
+new-customer. Design tokens, accessibility baseline (44px targets, VoiceOver labels,
+contrast-fixed muted gray), Lucide icons, native system font — all locked from
+`/plan-design-review`.
 
 All of it runs on local mock state. No screen below is wired to a real backend yet.
 
@@ -26,12 +28,15 @@ The walking-skeleton scope reduction (from `/plan-eng-review` Step 0) deferred s
 these on purpose. One was **not** a reviewed decision — I simplified it silently while
 building and should have flagged it at the time. Calling both kinds out explicitly:
 
-- [ ] **Multiple line items per invoice.** The schema is `invoice_items` (plural) —
-      multiple items per invoice was the intent — but the actual screen I built only
-      supports **one** description/qty/price row. Real jobs sometimes have more than
-      one line (materials + labor, e.g.). This wasn't a reviewed scope cut, it's a gap
-      I introduced during implementation. Worth a real decision: add multi-line-item
-      support now, or explicitly defer it with the same rigor the other cuts got.
+- [x] **Multiple line items per invoice.** ~~The schema is `invoice_items` (plural)...~~
+      Fixed — add/remove line items now works (`useFieldArray`), with a per-VAT-rate
+      total breakdown for invoices that mix rates across lines. Along the way, found
+      and fixed two real bugs (not just missing UI): a live-total value that silently
+      went stale due to `watch()`+`useMemo` (caught only by real keystroke testing in
+      a live browser — `tsc`/`eslint`/bundle export all stayed green through it), and
+      a React Compiler purity violation from calling `handleSubmit(onSubmit)` inline
+      in JSX. See the commit for both — worth reading if this pattern shows up
+      elsewhere in the app later.
 - [ ] **Dashboard.** Named in the original project brief's MVP list, but cut during
       the eng review's Step 0 scope reduction (walking skeleton = auth, company,
       customers, invoices only). Not built — deferred on purpose, unlike the item above.
@@ -63,7 +68,7 @@ building and should have flagged it at the time. Calling both kinds out explicit
 - [ ] Toggle KOR status after the fact (currently only set once, at onboarding).
 
 ### Invoices
-- [ ] **Add/remove line items** (see gap #1 above, if the decision is to build it now).
+- [x] **Add/remove line items** — done, see gap #1 above.
 - [ ] Edit a draft before sending — right now the only path is fill form → send,
       no save-as-draft-and-come-back-later.
 - [ ] **View/share the actual generated PDF.** The app never shows or links to the
