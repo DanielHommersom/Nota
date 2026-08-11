@@ -17,6 +17,28 @@ real backend yet. That's the entire next section.
 
 ---
 
+## Platform roadmap (locked)
+
+**iOS → Web → Android.** Deliberate choice: Web comes before Android because it gives
+Nota a public-facing surface (marketing, SEO, a sign-up funnel) that neither app store
+provides — that's judged more valuable right now than Android's reach. The tradeoff,
+consciously accepted: Android would otherwise have been the cheaper next step (same
+Expo/React Native codebase, mostly a store-listing + billing lift), so this ordering
+spends more engineering time before picking up that easy win.
+
+| Phase | What ships | Payment | New accounts needed |
+|-------|-----------|---------|---------------------|
+| 1 — iOS | The current mobile app, wired to a real backend | Apple In-App Purchase (StoreKit), via RevenueCat | Apple Developer, RevenueCat |
+| 2 — Web | Next.js dashboard, same backend/compliance module | Stripe (Checkout + Billing Portal) | Stripe |
+| 3 — Android | Same Expo codebase, Play Store listing | Google Play Billing, via RevenueCat | Google Play Console |
+
+RevenueCat is worth adopting from Phase 1 even though only StoreKit is live at first —
+it's the thing that later knows a single user is entitled whether they subscribed via
+Apple, Stripe, or Google, instead of you hand-rolling that reconciliation when Phase 2
+or 3 lands.
+
+---
+
 ## 1. Features still to build
 
 ### 1a. Backend — required before this app can do anything real
@@ -47,20 +69,35 @@ These are the biggest gap right now: the frontend exists, the backend doesn't.
 
 ### 1b. Monetization — required before you can actually charge anyone
 
-- [ ] Stripe subscription product: €3.99/mo, 7-day trial.
+- [ ] **Phase 1 (iOS):** Apple In-App Purchase subscription product via StoreKit,
+      wrapped in **RevenueCat** (avoids hand-rolling receipt validation and
+      subscription-state sync). Apple requires IAP — not Stripe — for any subscription
+      that unlocks functionality inside the app (Guideline 3.1.1); using Stripe here
+      risks App Store rejection.
+- [ ] **Phase 2 (Web):** Stripe Checkout + Billing Portal for web-originated
+      subscriptions, reconciled against the same RevenueCat entitlement so a user is
+      recognized as subscribed regardless of where they paid.
+- [ ] **Phase 3 (Android):** Google Play Billing, same RevenueCat wrapper.
 - [ ] Free-tier logic: 3 invoices **lifetime**, not monthly (locked decision from the
-      eng review — see design doc Constraints).
+      eng review — see design doc Constraints). Platform-agnostic, applies to all
+      three phases.
 - [ ] Paywall/upgrade screen in the app.
 - [ ] `Payments` and `Subscriptions` tables — explicitly deferred out of the MVP
-      walking skeleton, needed before this can generate revenue.
+      walking skeleton, needed before Phase 1 can generate revenue.
 
 ### 1c. Distribution — required before a real person can install this
 
-- [ ] Apple TestFlight internal/external testing track set up (T12) — this is how
-      Melvin or Casper's clients get a build without waiting on full App Store review.
-- [ ] Google Play internal testing track set up.
+- [ ] **Phase 1:** Apple TestFlight internal/external testing track set up (T12) —
+      this is how Melvin or Casper's clients get a build without waiting on full App
+      Store review. Requires a support URL and a privacy policy URL in App Store
+      Connect before any build (even TestFlight) can be submitted — a couple of
+      static pages, not the full web app.
+- [ ] **Phase 2:** Web app deployed (Vercel), publicly reachable — this is also where
+      the support/privacy pages above can permanently live instead of a throwaway
+      single-pager.
+- [ ] **Phase 3:** Google Play internal testing track set up.
 - [ ] App icons, splash screen, and store listing assets (currently using Expo's
-      placeholder icons).
+      placeholder icons) — needed by Phase 1.
 
 ### 1d. Polish already flagged, not yet built (from TODOS.md)
 
@@ -109,18 +146,25 @@ business registration.
 
 ### 2b. Before you can charge money
 
-- [ ] **Stripe account.** For iDEAL support (the payment method actually used in NL)
-      you'll want to confirm Stripe's Dutch payment method coverage during setup, and
-      you'll need a registered business entity (see 2d) to receive payouts.
+- [ ] **Phase 1 — Apple Developer Program, enrolled in the App Store Small Business
+      Program** (drops Apple's cut from 30% to 15% — you'll qualify easily, well under
+      the $1M/year revenue threshold). This is also account 2c's entry, listed here
+      too because it's the thing that gates revenue in Phase 1, not just distribution.
+- [ ] **Phase 1 — RevenueCat account.** Free tier covers a solo pre-revenue app.
+- [ ] **Phase 2 — Stripe account**, once Web ships. For iDEAL support (the payment
+      method actually used in NL) confirm Stripe's Dutch payment method coverage
+      during setup. You'll need a registered business entity (see 2d) to receive
+      payouts — same requirement, just triggered later than originally planned.
 
 ### 2c. Before real users can install the app
 
-- [ ] **Apple Developer Program** — $99/year. Required for TestFlight and the App
-      Store, no way around it.
-- [ ] **Google Play Console account** — $25 one-time. Required for Play's internal
-      testing track and the Play Store.
-- [ ] **Expo/EAS account** — for `eas build` / `eas submit`. Free tier has limited
-      concurrent builds; fine to start, may need a paid tier if you're iterating fast.
+- [ ] **Phase 1 — Apple Developer Program** — $99/year. Required for TestFlight and
+      the App Store, no way around it. (Same enrollment as 2b above.)
+- [ ] **Phase 1 — Expo/EAS account** — for `eas build` / `eas submit`. Free tier has
+      limited concurrent builds; fine to start, may need a paid tier if you're
+      iterating fast.
+- [ ] **Phase 3 — Google Play Console account** — $25 one-time. Not needed until
+      Android. Don't open this in Phase 1 — nothing to do with it yet.
 
 ### 2d. Business / legal (not software, but blocking real money)
 
@@ -149,7 +193,8 @@ business registration.
 - Two TODOS.md items are still genuinely open decisions, not build tasks: whether
   deferring AI undermines how you should interpret the Melvin pilot result, and
   whether the €3.99/mo subscription model actually fits a deliberately low-frequency
-  user. Worth rereading `TODOS.md` before you commit to the Stripe setup in 2b.
+  user. Worth rereading `TODOS.md` before you commit to the Phase 1 IAP setup in 2b —
+  it's the same pricing question, just now facing Apple's 15% cut on top of it.
 - The single highest-priority item on this entire list is still not code or an
   account — it's the design doc's Assignment: watch a real zzp'er invoice something
   with their current tool before building further. Everything in section 1 gets
