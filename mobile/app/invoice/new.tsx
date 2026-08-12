@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRight, Plus } from "lucide-react-native";
 
 import { Card, CardRow } from "@/components/ui/Card";
-import { SendButton, type SendButtonState } from "@/components/ui/SendButton";
+import { AsyncActionButton, type AsyncButtonState } from "@/components/ui/AsyncActionButton";
 import { StatusBanner } from "@/components/ui/StatusBanner";
 import { useInvoiceStore } from "@/features/invoices/InvoiceStore";
 import { CustomerPickerSheet } from "@/features/invoices/CustomerPickerSheet";
@@ -61,7 +61,7 @@ export default function InvoiceCreateScreen() {
   const totals = calculateInvoiceTotals(items ?? []);
   const vatBreakdown = Object.entries(totals.vatByRate) as [string, number][];
 
-  const buttonState: SendButtonState = isSubmitting ? "sending" : "idle";
+  const buttonState: AsyncButtonState = isSubmitting ? "sending" : "idle";
   const canSend = Boolean(selectedCustomer) && totals.subtotalCents > 0;
 
   function resetToNewInvoice() {
@@ -174,7 +174,7 @@ export default function InvoiceCreateScreen() {
         </Card>
 
         <View className="mt-auto w-full pb-6">
-          <SendButton
+          <AsyncActionButton
             state="idle"
             label="+ Nieuwe factuur"
             accessibilityLabel="Nieuwe factuur starten"
@@ -248,7 +248,7 @@ export default function InvoiceCreateScreen() {
       </ScrollView>
 
       <View className="px-4 pb-6 pt-2">
-        <SendButton
+        <AsyncActionButton
           state={!canSend ? "disabled" : buttonState}
           label="Verstuur"
           accessibilityLabel={`Verstuur factuur van ${formatEuroCents(totals.totalCents)}${

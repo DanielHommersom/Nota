@@ -9,14 +9,27 @@ worth reading even if you think you already know what's built.
 
 ## 0. What's already built
 
-Invoice list (home, with empty state) · invoice create (manual entry, **multiple line
-items** with add/remove, inline validation, live VAT/total with per-rate breakdown for
-mixed-rate invoices, send states incl. failed/offline banners, spinner→checkmark send
-animation, success screen) · invoice detail (read-only, lists all line items) · stub
-screens for sign-in, company onboarding (incl. plain-language KOR toggle), and
-new-customer. Design tokens, accessibility baseline (44px targets, VoiceOver labels,
-contrast-fixed muted gray), Lucide icons, native system font — all locked from
-`/plan-design-review`.
+**Auth gate** — app launch checks for a session (mock, AsyncStorage-backed) and
+redirects accordingly: no session → signup/login screen (`app/auth/index.tsx`,
+defaults to signup, never auto-lands on login); has a session → the app. A fresh
+signup is explicitly navigated to company onboarding as its next step, but the gate
+itself doesn't yet re-enforce "has a company" on every later launch — a user who
+signs up, backs out of onboarding, and reopens the app later lands straight on the
+invoice list with no company profile. Real enforcement needs company data to check
+against, which is next screen's own scope (see "Company / account settings" below),
+not this gate's. Flagging it here so it isn't mistaken for already handled. Invoice
+list (home, with empty state) · invoice create
+(manual entry, **multiple line items** with add/remove, inline validation, live
+VAT/total with per-rate breakdown for mixed-rate invoices, send states incl.
+failed/offline banners, spinner→checkmark send animation, success screen) · invoice
+detail (read-only, lists all line items) · company onboarding (incl. plain-language
+KOR toggle) and new-customer stubs. Design tokens, accessibility baseline (44px
+targets, VoiceOver labels, contrast-fixed muted gray), Lucide icons, native system
+font — all locked from `/plan-design-review`.
+
+`AsyncActionButton` (renamed from `SendButton`) and `StatusBanner` are now shared
+across both the invoice-send and auth flows — the "same animation language" the auth
+build asked for is a real shared component, not a copy.
 
 All of it runs on local mock state. No screen below is wired to a real backend yet.
 
@@ -66,6 +79,9 @@ building and should have flagged it at the time. Calling both kinds out explicit
       in your KVK-nummer later.
 - [ ] Log out.
 - [ ] Toggle KOR status after the fact (currently only set once, at onboarding).
+- [ ] Enforce "has completed company onboarding" on every app launch, not just
+      right after signup — see the auth-gate gap noted in section 0. Needs real
+      company data to check against, so this waits on the settings screen above.
 
 ### Invoices
 - [x] **Add/remove line items** — done, see gap #1 above.
@@ -84,11 +100,23 @@ building and should have flagged it at the time. Calling both kinds out explicit
 - [ ] "Manage subscription" screen (current plan, trial status, cancel).
 
 ### Auth
-- [ ] Real sign-in flow wired to Supabase Auth (the current screen is a static stub —
-      decide magic-link vs. email+password, then build the actual flow, not just the
-      email field).
-- [ ] Session persistence — stay logged in across app restarts.
-- [ ] Log out.
+- [x] **Signup/login flow** — `app/auth/index.tsx`. Email + password (not magic link —
+      decided against it specifically for this audience: a job-site user with marginal
+      signal shouldn't have to leave the app and wait on mail delivery just to sign
+      in). Single screen, mode toggle between signup and login, live validation,
+      password strength meter, show/hide toggle, distinct offline vs. failed error
+      banners (email-taken gets a one-tap switch to login; invalid-credentials gets no
+      pointless retry button since the fix is editing input, not retrying). Still
+      against the mock `authService` in `src/features/auth/` — real Supabase swap is
+      the T1/T4 backend work, not a frontend gap anymore.
+- [x] **Session persistence** — AsyncStorage-backed (`authStorage.ts`), survives app
+      restart. Matches Supabase's own recommended RN storage adapter, so the eventual
+      swap keeps the same persistence behavior, not just the same method shapes.
+- [ ] **Log out.** `authService.signOut()` exists but nothing in the UI calls it yet —
+      no settings/account screen exists to put the button on (see "Company / account
+      settings" above).
+- [ ] Password reset flow — explicitly out of scope for the signup/login build,
+      not yet started.
 
 ---
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Card, CardRow } from "@/components/ui/Card";
-import { SendButton } from "@/components/ui/SendButton";
+import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
 
 /**
  * Front-end baseline stub — creates a customer locally and returns.
@@ -84,7 +84,7 @@ export default function NewCustomerScreen() {
       </ScrollView>
 
       <View className="px-4 pb-6 pt-2">
-        <SendButton
+        <AsyncActionButton
           state={canSave ? "idle" : "disabled"}
           label="Klant opslaan"
           accessibilityLabel="Klant opslaan"

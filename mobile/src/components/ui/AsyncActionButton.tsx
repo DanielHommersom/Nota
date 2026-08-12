@@ -7,10 +7,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { Check } from "lucide-react-native";
 
-export type SendButtonState = "idle" | "disabled" | "sending" | "success";
+export type AsyncButtonState = "idle" | "disabled" | "sending" | "success";
 
 type Props = {
-  state: SendButtonState;
+  state: AsyncButtonState;
   label: string;
   onPress: () => void;
   /**
@@ -19,15 +19,28 @@ type Props = {
    * Locked in /plan-design-review Pass 6 (accessibility baseline).
    */
   accessibilityLabel: string;
+  /** Shown during `sending`. Defaults to the invoice-send flow's original copy. */
+  sendingLabel?: string;
+  /** Shown during `success`. Defaults to the invoice-send flow's original copy. */
+  successLabel?: string;
 };
 
 /**
- * The single most emotionally-loaded interaction in the app — the payoff of
- * the "30 seconds" promise. Per /plan-design-review Pass 3 (Issue 4): the
- * button collapses in-place into a spinner on tap, then morphs into a
- * checkmark on success, rather than an instant screen swap.
+ * Shared primary-action button for any async submit (invoice send, account
+ * creation, ...) — not invoice-specific despite the name's origin. Per
+ * /plan-design-review Pass 3 (Issue 4): the button collapses in-place into a
+ * spinner on tap, then morphs into a checkmark on success, rather than an
+ * instant screen swap. Reused as-is (same animation language) rather than
+ * forked, per the onboarding flow spec.
  */
-export function SendButton({ state, label, onPress, accessibilityLabel }: Props) {
+export function AsyncActionButton({
+  state,
+  label,
+  onPress,
+  accessibilityLabel,
+  sendingLabel = "Bezig met verzenden…",
+  successLabel = "Verstuurd",
+}: Props) {
   const contentOpacity = useSharedValue(1);
 
   useEffect(() => {
@@ -65,7 +78,7 @@ export function SendButton({ state, label, onPress, accessibilityLabel }: Props)
             state === "disabled" ? "text-muted" : "text-white"
           }`}
         >
-          {state === "sending" ? "Bezig met verzenden…" : state === "success" ? "Verstuurd" : label}
+          {state === "sending" ? sendingLabel : state === "success" ? successLabel : label}
         </Text>
       </Animated.View>
     </Pressable>

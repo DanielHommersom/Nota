@@ -2,7 +2,7 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Card, CardRow } from "@/components/ui/Card";
-import { SendButton } from "@/components/ui/SendButton";
+import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
 
 /**
  * Front-end baseline stub for the one-time company onboarding step.
@@ -89,7 +89,7 @@ export default function CompanyOnboardingScreen() {
       </ScrollView>
 
       <View className="px-4 pb-6 pt-2">
-        <SendButton
+        <AsyncActionButton
           state={canContinue ? "idle" : "disabled"}
           label="Doorgaan"
           accessibilityLabel="Bedrijfsgegevens opslaan en doorgaan"
