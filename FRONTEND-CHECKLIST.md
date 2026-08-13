@@ -31,6 +31,19 @@ font — all locked from `/plan-design-review`.
 across both the invoice-send and auth flows — the "same animation language" the auth
 build asked for is a real shared component, not a copy.
 
+**Drawer navigation** — `app/(drawer)/_layout.tsx` gates the primary screens (Facturen,
+Klanten, Bedrijfsprofiel, Instellingen) behind a side menu, hamburger top-left, swipe
+from the left edge, tap-outside or an explicit close button — all three close paths
+verified (swipe itself wasn't hand-built, it's the navigator's untouched default
+gesture, so it's the one path not independently re-verified here). Header shows the
+real company name/initials once onboarding is done, a live subscription badge
+("Gratis · 2/3 facturen", derived from the actual mock invoice count, not hardcoded),
+and a logout item with a real confirmation dialog (not a native `Alert`, to stay
+visually consistent with the rest of the app) — confirmed it clears the session and
+redirects to `/auth`, not just closes the drawer. "Nieuwe factuur" and modal screens
+stay outside the drawer group on purpose — the drawer is secondary navigation, not the
+path into the 30-second core flow.
+
 All of it runs on local mock state. No screen below is wired to a real backend yet.
 
 ---
@@ -67,6 +80,8 @@ building and should have flagged it at the time. Calling both kinds out explicit
 ## 2. Screens still needed for MVP
 
 ### Customers
+- [x] Navigation destination exists (`/customers`, reachable from the drawer) — still
+      just an `EmptyState` placeholder, per spec ("only the navigation, not the screen").
 - [ ] A real **customer list/management screen.** Right now customers only exist
       inside the invoice-create picker sheet and a bare "new customer" form — there's
       no "Klanten" screen to see, edit, or archive existing customers on its own.
@@ -74,10 +89,18 @@ building and should have flagged it at the time. Calling both kinds out explicit
 - [ ] Delete/archive customer.
 
 ### Company / account settings
-- [ ] A **settings screen** to view/edit company info after the one-time onboarding.
-      Right now onboarding is a one-way door — there's no way back in to fix a typo
-      in your KVK-nummer later.
-- [ ] Log out.
+- [x] **Log out** — done. Lives in the drawer, not a settings screen (there wasn't one
+      to put it on) — confirmation dialog, clears the mock session, redirects to
+      `/auth`. `authService.signOut()` is real; only the backend behind it is mocked.
+- [x] Navigation destination for company profile exists (`/company-profile`, reachable
+      from the drawer and its own header tap target) — shows a **read-only** summary
+      of what onboarding collected (name, KVK, BTW, KOR), not the full edit UI.
+- [ ] A **settings screen** to view/edit company info after the one-time onboarding —
+      the read-only summary above isn't this. Right now onboarding is still a one-way
+      door for actually changing anything — there's no way back in to fix a typo in
+      your KVK-nummer later.
+- [ ] `/settings` navigation destination exists too, same placeholder treatment — no
+      real settings content yet, as specced.
 - [ ] Toggle KOR status after the fact (currently only set once, at onboarding).
 - [ ] Enforce "has completed company onboarding" on every app launch, not just
       right after signup — see the auth-gate gap noted in section 0. Needs real
@@ -112,9 +135,7 @@ building and should have flagged it at the time. Calling both kinds out explicit
 - [x] **Session persistence** — AsyncStorage-backed (`authStorage.ts`), survives app
       restart. Matches Supabase's own recommended RN storage adapter, so the eventual
       swap keeps the same persistence behavior, not just the same method shapes.
-- [ ] **Log out.** `authService.signOut()` exists but nothing in the UI calls it yet —
-      no settings/account screen exists to put the button on (see "Company / account
-      settings" above).
+- [x] **Log out** — now wired, from the drawer (see "Company / account settings" above).
 - [ ] Password reset flow — explicitly out of scope for the signup/login build,
       not yet started.
 
@@ -131,6 +152,13 @@ none of it survives an app restart or is real:
       the "type 'fail' in the description" test hook, not a real failure path.
 - [ ] Replace `MOCK_CUSTOMERS` / `MOCK_INVOICES` with real Supabase queries once T1
       (schema) and T3 (send route) exist.
+- [ ] Replace `CompanyProfileContext`'s in-memory state with a real query — it
+      currently resets on every full page reload (not AsyncStorage-backed like auth),
+      so a signed-up user's company data doesn't survive an app restart yet.
+- [ ] Replace `useSubscriptionStatus()`'s mock with real RevenueCat/Stripe entitlement
+      data once Phase 1 payment work (`CHECKLIST.md`) lands — both already return the
+      `{ data, isLoading }` shape a real query hook would, so call sites shouldn't need
+      to change, just the implementation inside those two files.
 
 ---
 

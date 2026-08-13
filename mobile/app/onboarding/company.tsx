@@ -3,19 +3,28 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput,
 import { useRouter } from "expo-router";
 import { Card, CardRow } from "@/components/ui/Card";
 import { AsyncActionButton } from "@/components/ui/AsyncActionButton";
+import { useCompanyProfile } from "@/features/company/CompanyProfileContext";
 
 /**
  * Front-end baseline stub for the one-time company onboarding step.
- * Not yet wired to Supabase (T1, /plan-eng-review).
+ * Not yet wired to Supabase (T1, /plan-eng-review) — writes into the same
+ * mock CompanyProfileContext the drawer reads from, so the drawer header
+ * reflects real entered data instead of being a second, disconnected mock.
  */
 export default function CompanyOnboardingScreen() {
   const router = useRouter();
+  const { setCompanyProfile } = useCompanyProfile();
   const [name, setName] = useState("");
   const [kvk, setKvk] = useState("");
   const [btw, setBtw] = useState("");
   const [korExempt, setKorExempt] = useState(false);
 
   const canContinue = name.trim().length > 0 && kvk.trim().length > 0;
+
+  function saveAndContinue() {
+    setCompanyProfile({ name: name.trim(), kvkNummer: kvk.trim(), btwNummer: btw.trim(), korExempt, logoUrl: null });
+    router.replace("/");
+  }
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -93,7 +102,7 @@ export default function CompanyOnboardingScreen() {
           state={canContinue ? "idle" : "disabled"}
           label="Doorgaan"
           accessibilityLabel="Bedrijfsgegevens opslaan en doorgaan"
-          onPress={() => router.replace("/")}
+          onPress={saveAndContinue}
         />
       </View>
     </KeyboardAvoidingView>

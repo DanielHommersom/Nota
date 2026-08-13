@@ -6,6 +6,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Redirect, Stack, useSegments } from "expo-router";
 import { InvoiceStoreProvider } from "@/features/invoices/InvoiceStore";
+import { CompanyProfileProvider } from "@/features/company/CompanyProfileContext";
 import { AuthProvider, useAuth } from "@/features/auth/AuthContext";
 
 /**
@@ -45,33 +46,38 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="dark" />
         <AuthProvider>
-          <InvoiceStoreProvider>
-            <AuthGate>
-              <Stack
-                screenOptions={{
-                  headerShadowVisible: false,
-                  headerTitleStyle: { fontSize: 17, fontWeight: "600" },
-                  contentStyle: { backgroundColor: "#f7f7f8" },
-                }}
-              >
-                <Stack.Screen name="index" options={{ title: "Facturen" }} />
-                <Stack.Screen
-                  name="invoice/new"
-                  options={{ title: "Nieuwe factuur", presentation: "modal" }}
-                />
-                <Stack.Screen name="invoice/[id]" options={{ title: "Factuur" }} />
-                <Stack.Screen
-                  name="customer/new"
-                  options={{ title: "Nieuwe klant", presentation: "modal" }}
-                />
-                <Stack.Screen
-                  name="onboarding/company"
-                  options={{ title: "Bedrijfsgegevens", headerBackVisible: false }}
-                />
-                <Stack.Screen name="auth/index" options={{ headerShown: false }} />
-              </Stack>
-            </AuthGate>
-          </InvoiceStoreProvider>
+          <CompanyProfileProvider>
+            <InvoiceStoreProvider>
+              <AuthGate>
+                <Stack
+                  screenOptions={{
+                    headerShadowVisible: false,
+                    headerTitleStyle: { fontSize: 17, fontWeight: "600" },
+                    contentStyle: { backgroundColor: "#f7f7f8" },
+                  }}
+                >
+                  {/* The drawer (Facturen, Klanten, Bedrijfsprofiel, Instellingen)
+                      owns its own headers per screen — hidden here so they
+                      don't get a second header from this outer Stack. */}
+                  <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="invoice/new"
+                    options={{ title: "Nieuwe factuur", presentation: "modal" }}
+                  />
+                  <Stack.Screen name="invoice/[id]" options={{ title: "Factuur" }} />
+                  <Stack.Screen
+                    name="customer/new"
+                    options={{ title: "Nieuwe klant", presentation: "modal" }}
+                  />
+                  <Stack.Screen
+                    name="onboarding/company"
+                    options={{ title: "Bedrijfsgegevens", headerBackVisible: false }}
+                  />
+                  <Stack.Screen name="auth/index" options={{ headerShown: false }} />
+                </Stack>
+              </AuthGate>
+            </InvoiceStoreProvider>
+          </CompanyProfileProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

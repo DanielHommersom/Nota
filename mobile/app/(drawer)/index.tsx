@@ -1,5 +1,6 @@
 import { FlatList, Pressable, View } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { Drawer } from "expo-router/drawer";
 import { FileText, Plus } from "lucide-react-native";
 import { useInvoiceStore } from "@/features/invoices/InvoiceStore";
 import { InvoiceRow } from "@/features/invoices/InvoiceRow";
@@ -11,7 +12,7 @@ export default function InvoiceListScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <Stack.Screen
+      <Drawer.Screen
         options={{
           headerRight: () => (
             <Pressable
