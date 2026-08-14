@@ -24,7 +24,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Nota gebruikt je foto's om een bedrijfslogo aan je facturen toe te voegen."
+        }
+      ]
     ]
   }
 }
