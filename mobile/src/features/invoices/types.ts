@@ -52,6 +52,14 @@ export type Invoice = {
   dueDate: string | null;
   /** Null = unpaid. Set by the "markeer als betaald" toggle on the invoice detail screen. */
   paidAt: string | null;
+  /**
+   * Null = no reminder sent yet. Set by "Stuur herinnering" (invoice detail
+   * screen, and the quick action on an overdue row in the Facturen list) —
+   * the previously-missing next step for the dashboard's "te herinneren"
+   * count (see receivables.ts). Only meaningful once `dueDate` has passed;
+   * a fresh, non-overdue invoice never gets this UI surfaced.
+   */
+  remindedAt: string | null;
   /** Last local edit — lets the drafts list show "bewerkt 3 min geleden". */
   updatedAt: string;
 };

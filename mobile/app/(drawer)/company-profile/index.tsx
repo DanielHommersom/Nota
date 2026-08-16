@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Building2, ChevronRight, Palette, Pencil } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useTheme } from "react-native-paper";
 import { Card, CardRow } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useCompanyProfile } from "@/features/company/CompanyProfileContext";
@@ -14,6 +15,10 @@ import { useCompanyProfile } from "@/features/company/CompanyProfileContext";
  * drawer group.
  */
 export default function CompanyProfileScreen() {
+  // theme.colors.primary, not the hardcoded "#2563eb" (pre-rebrand blue)
+  // this used to render below — see the identical fix/comment in
+  // app/(drawer)/settings/index.tsx.
+  const theme = useTheme();
   const router = useRouter();
   const { data: company, isLoading } = useCompanyProfile();
 
@@ -70,7 +75,7 @@ export default function CompanyProfileScreen() {
           className="min-h-11 flex-row items-center justify-between rounded-control bg-card px-4 py-3.5 border border-border"
         >
           <View className="flex-row items-center gap-3">
-            <Pencil color="#2563eb" size={18} />
+            <Pencil color={theme.colors.primary} size={18} />
             <Text className="text-[15px] font-medium text-ink">Bedrijfsgegevens bewerken</Text>
           </View>
           <ChevronRight color="#c4c4c8" size={16} />
@@ -82,7 +87,7 @@ export default function CompanyProfileScreen() {
           className="min-h-11 flex-row items-center justify-between rounded-control bg-card px-4 py-3.5 border border-border"
         >
           <View className="flex-row items-center gap-3">
-            <Palette color="#2563eb" size={18} />
+            <Palette color={theme.colors.primary} size={18} />
             <Text className="text-[15px] font-medium text-ink">Branding (logo, kleur, briefpapier)</Text>
           </View>
           <ChevronRight color="#c4c4c8" size={16} />

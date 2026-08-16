@@ -89,6 +89,14 @@ export default function ForgotPasswordScreen() {
             <CardRow isLast>
               <TextInput
                 mode="flat"
+                dense
+                // dense + min-h-11 (44px, via className below) — see the
+                // bareInputProps comment in app/auth/index.tsx: Paper's
+                // non-dense default is a fixed 56dp, which read as oversized;
+                // dense + a 44pt floor keeps this field the same height as
+                // every other bare field. The floor is a Tailwind class, not
+                // style.minHeight — a raw number there conflicts with
+                // NativeWind's className compilation on web.
                 underlineColor="transparent"
                 // Not "transparent" — see the bareInputProps comment in
                 // app/auth/index.tsx: this color also drives the text
@@ -96,7 +104,7 @@ export default function ForgotPasswordScreen() {
                 // caret visible instead of hiding it while typing.
                 placeholderTextColor="#b8b8bc"
                 contentStyle={{ paddingHorizontal: 0 }}
-                style={{ backgroundColor: "transparent", minHeight: 44 }}
+                style={{ backgroundColor: "transparent" }}
                 value={email}
                 onChangeText={(t) => {
                   setEmail(t);
@@ -106,7 +114,7 @@ export default function ForgotPasswordScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
-                className="flex-1"
+                className="flex-1 min-h-11"
                 accessibilityLabel="E-mailadres"
               />
             </CardRow>

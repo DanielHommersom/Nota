@@ -26,6 +26,15 @@ type InvoiceStoreValue = {
    * just simulated in memory instead of with a Postgres row lock.
    */
   allocateInvoiceNumber: () => Promise<string>;
+  /**
+   * Mock stand-in for a future "POST /api/invoices/:id/remind" call — same
+   * awaited-round-trip-then-store-update shape a real request would have,
+   * so screens calling this don't need to change when that lands. Lives
+   * here (not inlined per-screen like the older handleResend pattern) so
+   * both the invoice detail screen and the Facturen list's quick action
+   * share one implementation instead of two copies of the same delay.
+   */
+  sendReminder: (id: string) => Promise<void>;
 };
 
 const InvoiceStoreContext = createContext<InvoiceStoreValue | null>(null);
@@ -57,6 +66,18 @@ export function InvoiceStoreProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const getInvoice = useCallback((id: string) => invoices.find((inv) => inv.id === id), [invoices]);
+
+  const sendReminder = useCallback(
+    async (id: string) => {
+      // Mock network delay — no real email dispatch yet (Resend wiring is
+      // backend work, see CHECKLIST.md 1a). Matches the delay used elsewhere
+      // for a mock "send" (e.g. the old inline resend handler) so this
+      // doesn't feel instant/fake next to those.
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      updateInvoice(id, { remindedAt: new Date().toISOString() });
+    },
+    [updateInvoice],
+  );
 
   const allocateInvoiceNumber = useCallback((): Promise<string> => {
     const year = new Date().getFullYear();
@@ -120,8 +141,8 @@ export function InvoiceStoreProvider({ children }: { children: React.ReactNode }
   }, [invoices, allocateInvoiceNumber, updateInvoice]);
 
   const value = useMemo(
-    () => ({ invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, allocateInvoiceNumber }),
-    [invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, allocateInvoiceNumber],
+    () => ({ invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, allocateInvoiceNumber, sendReminder }),
+    [invoices, addInvoice, updateInvoice, deleteInvoice, getInvoice, allocateInvoiceNumber, sendReminder],
   );
 
   return <InvoiceStoreContext.Provider value={value}>{children}</InvoiceStoreContext.Provider>;

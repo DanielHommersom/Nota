@@ -29,9 +29,23 @@ type Props = {
  * unset falls through to the theme's `primary` (the logo teal), so focus
  * shows a real teal underline + a visible cursor, same as any other Paper
  * field, while staying borderless when not focused.
+ *
+ * `dense` + a `min-h-11` (44px) floor via `className`, not `style`: Paper's
+ * default (non-dense) TextInput is a fixed 56dp tall regardless of content,
+ * which read as oversized next to the rest of the form (e.g. "Naam klant").
+ * `dense` drops that to 40dp; `min-h-11` puts a floor back under it so the
+ * field never shrinks below the ~44pt minimum comfortable tap target — as a
+ * Tailwind class (not `style.minHeight`) because NativeWind's cssInterop
+ * compiles `className` to atomic CSS on web, and a raw numeric `minHeight`
+ * mixed into `style` alongside a `className` on the same element trips its
+ * style merge ("styleq: minHeight typeof 44 is not "string" or "null"").
+ * Every call site below appends `min-h-11` to its existing width className
+ * for this reason. Applied everywhere a bare field appears so every form in
+ * the app uses one consistent input height.
  */
 const bareInputProps = {
   mode: "flat" as const,
+  dense: true,
   underlineColor: "transparent",
   placeholderTextColor: "#b8b8bc",
   contentStyle: { paddingHorizontal: 0 },
@@ -105,7 +119,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onChangeText={field.onChange}
                   onBlur={field.onBlur}
                   placeholder="Bedrijfsnaam"
-                  className="flex-1"
+                  className="flex-1 min-h-11"
                   accessibilityLabel="Bedrijfsnaam"
                 />
               )}
@@ -127,7 +141,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   placeholder="12345678"
                   keyboardType="number-pad"
                   maxLength={8}
-                  className="w-32"
+                  className="w-32 min-h-11"
                   style={[bareInputProps.style, { textAlign: "right" }]}
                   accessibilityLabel="KVK-nummer"
                 />
@@ -149,7 +163,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onBlur={field.onBlur}
                   placeholder="NL123456789B01"
                   autoCapitalize="characters"
-                  className="w-40"
+                  className="w-40 min-h-11"
                   style={[bareInputProps.style, { textAlign: "right" }]}
                   accessibilityLabel="BTW-nummer"
                 />
@@ -189,7 +203,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onChangeText={field.onChange}
                   onBlur={field.onBlur}
                   placeholder="Straatnaam"
-                  className="flex-1"
+                  className="flex-1 min-h-11"
                   accessibilityLabel="Straatnaam"
                 />
               )}
@@ -209,7 +223,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onChangeText={field.onChange}
                   onBlur={field.onBlur}
                   placeholder="12A"
-                  className="w-32"
+                  className="w-32 min-h-11"
                   style={[bareInputProps.style, { textAlign: "right" }]}
                   accessibilityLabel="Huisnummer"
                 />
@@ -231,7 +245,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onBlur={field.onBlur}
                   placeholder="1234 AB"
                   autoCapitalize="characters"
-                  className="w-32"
+                  className="w-32 min-h-11"
                   style={[bareInputProps.style, { textAlign: "right" }]}
                   accessibilityLabel="Postcode"
                 />
@@ -252,7 +266,7 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
                   onChangeText={field.onChange}
                   onBlur={field.onBlur}
                   placeholder="Amsterdam"
-                  className="w-40"
+                  className="w-40 min-h-11"
                   style={[bareInputProps.style, { textAlign: "right" }]}
                   accessibilityLabel="Plaats"
                 />

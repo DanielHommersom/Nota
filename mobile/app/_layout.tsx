@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { Redirect, Stack, useSegments } from "expo-router";
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider, useTheme } from "react-native-paper";
 import type { IconProps } from "react-native-paper/lib/typescript/components/MaterialCommunityIcon";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { paperTheme } from "@/theme/paperTheme";
@@ -44,6 +44,14 @@ function PaperIcon({ name, color, size }: IconProps) {
  * send them to finish onboarding before anything else.
  */
 function AuthGate({ children }: { children: React.ReactNode }) {
+  // theme.colors.primary, not the hardcoded "#2563eb" this used to render —
+  // the pre-rebrand blue, left behind by the "use the logo's colors"
+  // design-system pass the same way as the other spots fixed alongside
+  // this one (EmptyState, MenuItem, StatCard, AppDrawerContent): a raw
+  // string instead of a theme lookup, so it never picked up the new teal.
+  // AuthGate renders inside PaperProvider (see RootLayout below), so
+  // useTheme() here reads the same app-wide theme every other screen does.
+  const theme = useTheme();
   const { user, isLoading: authLoading } = useAuth();
   const { data: company, isLoading: companyLoading } = useCompanyProfile();
   const segments = useSegments();
@@ -51,7 +59,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (authLoading || (user && companyLoading)) {
     return (
       <View className="flex-1 items-center justify-center bg-bg">
-        <ActivityIndicator color="#2563eb" />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
   }

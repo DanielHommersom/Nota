@@ -31,6 +31,7 @@ export const MOCK_INVOICES: Invoice[] = [
     sentAt: inv1SentAt,
     dueDate: calculateDueDate(inv1SentAt),
     paidAt: null,
+    remindedAt: null,
     updatedAt: inv1SentAt,
   },
   {
@@ -50,6 +51,7 @@ export const MOCK_INVOICES: Invoice[] = [
     // Already paid — seed data showing a paid invoice drops out of "te
     // ontvangen" even though it's still "sent" and has a due date.
     paidAt: new Date(now.getTime() - 1000 * 60 * 60 * 4).toISOString(),
+    remindedAt: null,
     updatedAt: inv2SentAt,
   },
   {
@@ -62,6 +64,7 @@ export const MOCK_INVOICES: Invoice[] = [
     sentAt: null,
     dueDate: null,
     paidAt: null,
+    remindedAt: null,
     updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 3).toISOString(),
   },
   {
@@ -74,6 +77,7 @@ export const MOCK_INVOICES: Invoice[] = [
     sentAt: inv4SentAt,
     dueDate: calculateDueDate(inv4SentAt),
     paidAt: null,
+    remindedAt: null,
     updatedAt: inv4SentAt,
   },
 ];

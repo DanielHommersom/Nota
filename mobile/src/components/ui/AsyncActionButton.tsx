@@ -1,10 +1,4 @@
-import { useEffect } from "react";
-import { ActivityIndicator, Pressable, Text } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { Button, useTheme } from "react-native-paper";
 import { Check } from "lucide-react-native";
 
 export type AsyncButtonState = "idle" | "disabled" | "sending" | "success";
@@ -27,11 +21,13 @@ type Props = {
 
 /**
  * Shared primary-action button for any async submit (invoice send, account
- * creation, ...) — not invoice-specific despite the name's origin. Per
- * /plan-design-review Pass 3 (Issue 4): the button collapses in-place into a
- * spinner on tap, then morphs into a checkmark on success, rather than an
- * instant screen swap. Reused as-is (same animation language) rather than
- * forked, per the onboarding flow spec.
+ * creation, ...) — not invoice-specific despite the name's origin. Now
+ * Paper's <Button mode="contained">: its built-in `loading` prop already
+ * morphs the button into a spinner in place (Pass 3, Issue 4's "collapses
+ * in-place, not an instant screen swap" requirement), so the hand-rolled
+ * reanimated cross-fade this used to do is gone — Paper's own transition
+ * covers it, and not re-adding a second animation layer on top of the
+ * library's is the point of adopting it.
  */
 export function AsyncActionButton({
   state,
@@ -41,46 +37,25 @@ export function AsyncActionButton({
   sendingLabel = "Bezig met verzenden…",
   successLabel = "Verstuurd",
 }: Props) {
-  const contentOpacity = useSharedValue(1);
-
-  useEffect(() => {
-    contentOpacity.value = withTiming(1, { duration: 150 });
-  }, [state, contentOpacity]);
-
-  const style = useAnimatedStyle(() => ({ opacity: contentOpacity.value }));
-
+  const theme = useTheme();
   const isDisabled = state === "disabled" || state === "sending";
-  const bg =
-    state === "disabled"
-      ? "bg-border"
-      : state === "success"
-        ? "bg-success"
-        : "bg-accent";
 
   return (
-    <Pressable
+    <Button
+      mode="contained"
       onPress={onPress}
       disabled={isDisabled}
-      accessibilityRole="button"
+      loading={state === "sending"}
+      icon={state === "success" ? ({ size, color }) => <Check color={color} size={size} strokeWidth={2.5} /> : undefined}
+      buttonColor={state === "success" ? theme.colors.tertiary : undefined}
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: state === "sending" }}
-      // 56px height clears the 44px minimum touch target (Pass 6, Issue 8).
-      className={`h-14 items-center justify-center rounded-control ${bg}`}
+      // 56px content height clears the 44px minimum touch target (Pass 6, Issue 8).
+      contentStyle={{ height: 56 }}
+      style={{ borderRadius: 14, justifyContent: "center" }}
+      labelStyle={{ fontSize: 17, fontWeight: "600" }}
     >
-      <Animated.View style={style} className="flex-row items-center gap-2">
-        {state === "sending" ? (
-          <ActivityIndicator color="#ffffff" />
-        ) : state === "success" ? (
-          <Check color="#ffffff" size={20} strokeWidth={2.5} />
-        ) : null}
-        <Text
-          className={`text-[17px] font-semibold ${
-            state === "disabled" ? "text-muted" : "text-white"
-          }`}
-        >
-          {state === "sending" ? sendingLabel : state === "success" ? successLabel : label}
-        </Text>
-      </Animated.View>
-    </Pressable>
+      {state === "sending" ? sendingLabel : state === "success" ? successLabel : label}
+    </Button>
   );
 }

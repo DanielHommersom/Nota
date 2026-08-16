@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Building2, ChevronRight, HelpCircle, LogOut, Palette, ShieldCheck } from "lucide-react-native";
+import { useTheme } from "react-native-paper";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/features/auth/AuthContext";
 import * as authService from "@/features/auth/authService";
@@ -20,7 +21,11 @@ function SettingsRow({
   onPress: () => void;
   tone?: "default" | "danger";
 }) {
-  const iconColor = tone === "danger" ? "#b45309" : "#2563eb";
+  // theme.colors.*, not hardcoded hex — "#2563eb" was the pre-rebrand blue,
+  // a leftover from before the "use the logo's colors" design-system pass
+  // (src/theme/colors.js) that missed every raw color string like this one.
+  const theme = useTheme();
+  const iconColor = tone === "danger" ? theme.colors.error : theme.colors.primary;
   const textClass = tone === "danger" ? "text-warn" : "text-ink";
   return (
     <Pressable

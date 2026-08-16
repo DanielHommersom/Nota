@@ -1,5 +1,6 @@
 import { Pressable, Text } from "react-native";
 import type { LucideIcon } from "lucide-react-native";
+import { useTheme } from "react-native-paper";
 
 type Props = {
   icon: LucideIcon;
@@ -13,7 +14,15 @@ type Props = {
 
 /** Drawer row: icon + label, ≥44pt tap target, active-section highlight. */
 export function MenuItem({ icon: Icon, label, onPress, active = false, tone = "default", accessibilityLabel }: Props) {
-  const iconColor = tone === "danger" ? "#b45309" : active ? "#2563eb" : "#6b6b70";
+  // Read from the theme, not hardcoded hex — the `active` branch used to be
+  // "#2563eb", the pre-rebrand blue, a leftover from before the "use the
+  // logo's colors" design-system pass (src/theme/colors.js) that every
+  // Paper component already picked up automatically. The other two
+  // branches happened to already match theme.colors.error/onSurfaceVariant
+  // by coincidence, but are switched too so this component has zero
+  // hardcoded color values left to drift out of sync again.
+  const theme = useTheme();
+  const iconColor = tone === "danger" ? theme.colors.error : active ? theme.colors.primary : theme.colors.onSurfaceVariant;
   const textColorClass = tone === "danger" ? "text-warn" : active ? "text-accent" : "text-ink";
 
   return (

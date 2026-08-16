@@ -36,13 +36,27 @@ const COPY: Record<Mode, { heading: string; submitLabel: string; sendingLabel: s
  * unset falls through to the theme's `primary` (the logo teal), so focus
  * shows a real teal underline + a visible cursor, same as any other Paper
  * field, while staying borderless when not focused.
+ *
+ * `dense` + a `min-h-11` (44px) floor via `className`, not `style`: Paper's
+ * default (non-dense) TextInput is a fixed 56dp tall regardless of content,
+ * which read as oversized next to the rest of the form. `dense` drops that
+ * to 40dp; `min-h-11` puts a floor back under it so the field never shrinks
+ * below the ~44pt minimum comfortable tap target — as a Tailwind class (not
+ * `style.minHeight`) because NativeWind's cssInterop compiles `className`
+ * to atomic CSS on web, and a raw numeric `minHeight` mixed into `style`
+ * alongside a `className` on the same element trips its style merge
+ * ("styleq: minHeight typeof 44 is not "string" or "null""). Applied
+ * everywhere a bare field appears (see the identical comment in
+ * CustomerForm.tsx etc.) so every form in the app uses one consistent
+ * input height.
  */
 const bareInputProps = {
   mode: "flat" as const,
+  dense: true,
   underlineColor: "transparent",
   placeholderTextColor: "#b8b8bc",
   contentStyle: { paddingHorizontal: 0 },
-  style: { backgroundColor: "transparent", minHeight: 44 },
+  style: { backgroundColor: "transparent" },
 };
 
 /**
@@ -207,7 +221,7 @@ export default function AuthScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
-                className="flex-1"
+                className="flex-1 min-h-11"
                 accessibilityLabel="E-mailadres"
               />
             )}

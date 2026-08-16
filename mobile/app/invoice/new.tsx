@@ -158,6 +158,7 @@ export default function InvoiceCreateScreen() {
         sentAt: null,
         dueDate: null,
         paidAt: null,
+        remindedAt: null,
         updatedAt: new Date().toISOString(),
       };
       addInvoice(draft);
@@ -215,6 +216,7 @@ export default function InvoiceCreateScreen() {
           sentAt: null,
           dueDate: null,
           paidAt: null,
+          remindedAt: null,
           updatedAt: new Date().toISOString(),
         };
         if (existingInvoice) updateInvoice(existingInvoice.id, queued);
@@ -243,6 +245,7 @@ export default function InvoiceCreateScreen() {
         sentAt,
         dueDate: calculateDueDate(sentAt),
         paidAt: null,
+        remindedAt: null,
         updatedAt: new Date().toISOString(),
       };
       if (existingInvoice) updateInvoice(existingInvoice.id, invoice);

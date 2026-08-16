@@ -13,6 +13,7 @@ import {
   Users,
   X,
 } from "lucide-react-native";
+import { useTheme } from "react-native-paper";
 
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -32,6 +33,7 @@ const SUPPORT_EMAIL = "support@nota.app";
  * button, since the spec wants all three close methods available.
  */
 export function AppDrawerContent(props: DrawerContentComponentProps) {
+  const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const { data: company } = useCompanyProfile();
@@ -78,7 +80,11 @@ export function AppDrawerContent(props: DrawerContentComponentProps) {
               {company ? (
                 <Text className="text-[15px] font-semibold text-accent">{companyInitials(company.name)}</Text>
               ) : (
-                <Building2 color="#2563eb" size={22} />
+                // theme.colors.primary, not the old "#2563eb" pre-rebrand
+                // blue this used to hardcode — see the identical comment in
+                // EmptyState.tsx for why that leftover survived the
+                // colors.js rebrand pass unnoticed.
+                <Building2 color={theme.colors.primary} size={22} />
               )}
             </View>
             <View className="flex-1">

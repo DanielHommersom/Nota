@@ -17,7 +17,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 export default function InvoiceListScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { invoices } = useInvoiceStore();
+  const { invoices, sendReminder } = useInvoiceStore();
 
   function openInvoice(id: string, status: string) {
     // Drafts drill into the editable create form (item 24); everything
@@ -55,7 +55,7 @@ export default function InvoiceListScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingTop: 8 }}
           renderItem={({ item }) => (
-            <InvoiceRow invoice={item} onPress={() => openInvoice(item.id, item.status)} />
+            <InvoiceRow invoice={item} onPress={() => openInvoice(item.id, item.status)} onSendReminder={sendReminder} />
           )}
         />
       )}

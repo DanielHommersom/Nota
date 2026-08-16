@@ -71,7 +71,7 @@ export default function DashboardScreen() {
 
         <StatCard
           icon={Inbox}
-          iconColor="#b45309"
+          iconColor={theme.colors.error}
           iconBgClassName="bg-warn-soft"
           label="Inkomend"
           primaryValue={formatEuroCents(expenseSummary.openCents)}
