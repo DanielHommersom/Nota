@@ -6,6 +6,7 @@ import {
   Building2,
   FileText,
   HelpCircle,
+  LayoutDashboard,
   LogOut,
   Plus,
   Settings,
@@ -102,7 +103,13 @@ export function AppDrawerContent(props: DrawerContentComponentProps) {
         </View>
 
         <View className="flex-1 px-2 pt-3">
-          <MenuItem icon={FileText} label="Facturen" active={pathname === "/"} onPress={() => go("/")} />
+          <MenuItem icon={LayoutDashboard} label="Dashboard" active={pathname === "/"} onPress={() => go("/")} />
+          <MenuItem
+            icon={FileText}
+            label="Facturen"
+            active={pathname === "/invoices"}
+            onPress={() => go("/invoices")}
+          />
           <MenuItem icon={Plus} label="Nieuwe factuur" onPress={() => go("/invoice/new")} />
           <MenuItem
             icon={Users}

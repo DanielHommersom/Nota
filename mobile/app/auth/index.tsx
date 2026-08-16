@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
 
+import { NotaLogoMark } from "@/components/brand/NotaLogoMark";
 import { Card, CardRow } from "@/components/ui/Card";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { StatusBanner } from "@/components/ui/StatusBanner";
@@ -23,6 +25,27 @@ const COPY: Record<Mode, { heading: string; submitLabel: string; sendingLabel: s
 };
 
 /**
+ * Every bare field inside a Card/CardRow uses this same "flat, borderless"
+ * Paper TextInput styling — see PasswordInput.tsx for why. `underlineColor`
+ * stays transparent so the field is borderless at rest, but
+ * `activeUnderlineColor` is deliberately left unset (not "transparent")
+ * rather than the field having no focus state at all: Paper reuses that
+ * same color for the text cursor/selection highlight, not just the
+ * underline, so forcing it to "transparent" made the caret itself invisible
+ * while typing — the field looked broken, not just borderless. Leaving it
+ * unset falls through to the theme's `primary` (the logo teal), so focus
+ * shows a real teal underline + a visible cursor, same as any other Paper
+ * field, while staying borderless when not focused.
+ */
+const bareInputProps = {
+  mode: "flat" as const,
+  underlineColor: "transparent",
+  placeholderTextColor: "#b8b8bc",
+  contentStyle: { paddingHorizontal: 0 },
+  style: { backgroundColor: "transparent", minHeight: 44 },
+};
+
+/**
  * The very first screen a new user sees. Default mode is signup, never
  * login — a fresh install has no account to log into yet. Email + password
  * (not magic link): the target user is often on a job site with marginal
@@ -34,6 +57,7 @@ const COPY: Record<Mode, { heading: string; submitLabel: string; sendingLabel: s
  * the default case, not the exception.
  */
 export default function AuthScreen() {
+  const theme = useTheme();
   const router = useRouter();
   const { setUser } = useAuth();
 
@@ -105,16 +129,30 @@ export default function AuthScreen() {
   // onPress (not called inline in JSX) is what keeps the impure/ref-safety
   // analyzer from flagging attemptAuth's contents as "might run during
   // render" — same reasoning as the invoice create screen.
+  //
+  // Navigation after a successful auth is deliberately *reactive*, not
+  // imperative: this used to call router.replace(mode === "signup" ?
+  // "/onboarding/company" : "/") itself right after setUser(user). That
+  // raced AuthGate's own declarative <Redirect> in app/_layout.tsx, which
+  // recomputes its target the instant `user` changes — for a sign-in on an
+  // account with no company profile yet, the two disagreed for a render
+  // ("/" from here vs "/onboarding/company" from the gate), and expo-router
+  // trying to honor both at once produced a "Maximum update depth exceeded"
+  // crash straight to a blank screen. AuthGate already has everything it
+  // needs (user + company) to pick the one correct destination, so it's now
+  // the only thing that navigates — same single-source-of-truth pattern the
+  // onboarding->app handoff already used (see that gate's comment).
   function submitForm() {
     const currentMode = mode;
     void handleSubmit(async (values) => {
       const user = await attemptAuth(values, currentMode);
       if (!user) return;
-      setUser(user);
       // Brief pause so the success checkmark is actually visible before
-      // navigating away — same animation language as the invoice send flow.
+      // AuthGate carries the user forward — same animation language as the
+      // invoice send flow. Delaying setUser (not a navigation call) is what
+      // delays the transition now.
       setTimeout(() => {
-        router.replace(currentMode === "signup" ? "/onboarding/company" : "/");
+        setUser(user);
       }, 500);
     })();
   }
@@ -126,8 +164,13 @@ export default function AuthScreen() {
       className="flex-1 justify-center bg-bg px-6"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Text className="mb-1.5 text-center text-[24px] font-bold tracking-tight text-ink">Nota</Text>
-      <Text className="mb-8 text-center text-[14px] text-muted">
+      <View className="mb-4 items-center">
+        <NotaLogoMark size={56} />
+      </View>
+      <Text variant="headlineSmall" style={{ textAlign: "center", fontWeight: "700", color: theme.colors.onSurface, marginBottom: 6 }}>
+        Nota
+      </Text>
+      <Text variant="bodyMedium" style={{ textAlign: "center", color: theme.colors.onSurfaceVariant, marginBottom: 32 }}>
         De snelste manier om een factuur te versturen.
       </Text>
 
@@ -143,7 +186,9 @@ export default function AuthScreen() {
         />
       ) : null}
 
-      <Text className="mb-2 ml-1 text-[12px] font-semibold uppercase tracking-wide text-muted">E-mailadres</Text>
+      <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginBottom: 8 }}>
+        E-mailadres
+      </Text>
       <Card>
         <CardRow isLast>
           <Controller
@@ -151,6 +196,7 @@ export default function AuthScreen() {
             name="email"
             render={({ field }) => (
               <TextInput
+                {...bareInputProps}
                 value={field.value}
                 onChangeText={(text) => {
                   field.onChange(text);
@@ -158,11 +204,10 @@ export default function AuthScreen() {
                 }}
                 onBlur={field.onBlur}
                 placeholder="jij@voorbeeld.nl"
-                placeholderTextColor="#b8b8bc"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
-                className="min-h-11 flex-1 text-[15px] text-ink"
+                className="flex-1"
                 accessibilityLabel="E-mailadres"
               />
             )}
@@ -170,10 +215,14 @@ export default function AuthScreen() {
         </CardRow>
       </Card>
       {errors.email && email && email.length > 0 ? (
-        <Text className="ml-1 mt-1.5 text-[12px] text-warn">{errors.email.message}</Text>
+        <Text variant="bodySmall" style={{ color: theme.colors.error, marginLeft: 4, marginTop: 6 }}>
+          {errors.email.message}
+        </Text>
       ) : null}
 
-      <Text className="mb-2 ml-1 mt-5 text-[12px] font-semibold uppercase tracking-wide text-muted">Wachtwoord</Text>
+      <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginTop: 20, marginBottom: 8 }}>
+        Wachtwoord
+      </Text>
       <Card>
         <CardRow isLast>
           <Controller
@@ -188,10 +237,8 @@ export default function AuthScreen() {
                 }}
                 onBlur={field.onBlur}
                 placeholder="Minimaal 8 tekens"
-                placeholderTextColor="#b8b8bc"
                 autoCapitalize="none"
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                className="min-h-11"
                 accessibilityLabel="Wachtwoord"
               />
             )}
@@ -200,7 +247,23 @@ export default function AuthScreen() {
       </Card>
       {mode === "signup" ? <PasswordStrengthMeter password={password ?? ""} /> : null}
       {errors.password && password && password.length > 0 ? (
-        <Text className="ml-1 mt-1.5 text-[12px] text-warn">{errors.password.message}</Text>
+        <Text variant="bodySmall" style={{ color: theme.colors.error, marginLeft: 4, marginTop: 6 }}>
+          {errors.password.message}
+        </Text>
+      ) : null}
+
+      {mode === "login" ? (
+        <Button
+          mode="text"
+          onPress={() => router.push("/auth/forgot-password")}
+          accessibilityLabel="Wachtwoord vergeten"
+          compact
+          contentStyle={{ justifyContent: "flex-end" }}
+          style={{ marginTop: 12, alignSelf: "flex-end" }}
+          labelStyle={{ fontSize: 13 }}
+        >
+          Wachtwoord vergeten?
+        </Button>
       ) : null}
 
       <View className="mt-6">
@@ -220,9 +283,11 @@ export default function AuthScreen() {
         accessibilityLabel={mode === "signup" ? "Inloggen met bestaand account" : "Nieuw account registreren"}
         className="mt-4 min-h-11 items-center justify-center"
       >
-        <Text className="text-[13px] text-muted">
+        <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
           {mode === "signup" ? "Heb je al een account? " : "Nog geen account? "}
-          <Text className="font-semibold text-accent">{mode === "signup" ? "Inloggen" : "Registreren"}</Text>
+          <Text variant="bodySmall" style={{ fontWeight: "600", color: theme.colors.primary }}>
+            {mode === "signup" ? "Inloggen" : "Registreren"}
+          </Text>
         </Text>
       </Pressable>
     </KeyboardAvoidingView>

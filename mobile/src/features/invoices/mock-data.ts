@@ -1,26 +1,37 @@
-import type { Customer, Invoice } from "./types";
+import { MOCK_CUSTOMERS } from "@/features/customers/mock-data";
+import { calculateDueDate } from "./paymentTerms";
+import type { Invoice } from "./types";
 
 /**
  * Local mock data for the front-end baseline. No backend is wired up yet —
  * T1-T3 (DB schema, compliance module, send API route) are separate,
  * tracked implementation tasks from /plan-eng-review.
+ *
+ * Customer mock data now lives in features/customers/mock-data.ts (see
+ * that file's comment) — re-exported here so existing imports of
+ * `MOCK_CUSTOMERS` from this file keep working.
  */
-export const MOCK_CUSTOMERS: Customer[] = [
-  { id: "cust_melvin", name: "Melvin de Boer", isBusiness: false },
-  { id: "cust_casper", name: "Casper Jansen (boekhouder)", isBusiness: true, kvkNummer: "12345678", btwNummer: "NL123456789B01" },
-];
+export { MOCK_CUSTOMERS };
+
+const now = new Date();
+const inv1SentAt = new Date(now.getTime() - 1000 * 60 * 22).toISOString();
+const inv2SentAt = new Date(now.getTime() - 1000 * 60 * 60 * 26).toISOString();
+// Sent well past the standard 30-day term — the seed data for the
+// dashboard's "te herinneren" count (item 5c in the dashboard brief).
+const inv4SentAt = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 40).toISOString();
 
 export const MOCK_INVOICES: Invoice[] = [
   {
     id: "inv_1",
     invoiceNumber: "2026-014",
     customer: MOCK_CUSTOMERS[0],
-    items: [
-      { id: "item_1a", description: "Stucwerk woonkamer", quantity: 1, unitPriceCents: 45000, vatRate: 21 },
-    ],
+    items: [{ id: "item_1a", description: "Stucwerk woonkamer", quantity: 1, unitPriceCents: 45000, vatRate: 21 }],
     totalCents: 54450,
     status: "sent",
-    sentAt: new Date(Date.now() - 1000 * 60 * 22).toISOString(),
+    sentAt: inv1SentAt,
+    dueDate: calculateDueDate(inv1SentAt),
+    paidAt: null,
+    updatedAt: inv1SentAt,
   },
   {
     id: "inv_2",
@@ -34,6 +45,35 @@ export const MOCK_INVOICES: Invoice[] = [
     ],
     totalCents: 107690,
     status: "sent",
-    sentAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+    sentAt: inv2SentAt,
+    dueDate: calculateDueDate(inv2SentAt),
+    // Already paid — seed data showing a paid invoice drops out of "te
+    // ontvangen" even though it's still "sent" and has a due date.
+    paidAt: new Date(now.getTime() - 1000 * 60 * 60 * 4).toISOString(),
+    updatedAt: inv2SentAt,
+  },
+  {
+    id: "inv_3",
+    invoiceNumber: null,
+    customer: MOCK_CUSTOMERS[0],
+    items: [{ id: "item_3a", description: "Buitenschilderwerk kozijnen", quantity: 1, unitPriceCents: 89000, vatRate: 21 }],
+    totalCents: 107690,
+    status: "draft",
+    sentAt: null,
+    dueDate: null,
+    paidAt: null,
+    updatedAt: new Date(now.getTime() - 1000 * 60 * 60 * 3).toISOString(),
+  },
+  {
+    id: "inv_4",
+    invoiceNumber: "2026-006",
+    customer: MOCK_CUSTOMERS[1],
+    items: [{ id: "item_4a", description: "Kozijnen plaatsen achtergevel", quantity: 1, unitPriceCents: 168000, vatRate: 21 }],
+    totalCents: 203280,
+    status: "sent",
+    sentAt: inv4SentAt,
+    dueDate: calculateDueDate(inv4SentAt),
+    paidAt: null,
+    updatedAt: inv4SentAt,
   },
 ];

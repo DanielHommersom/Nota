@@ -1,0 +1,282 @@
+import { useState } from "react";
+import { Pressable, ScrollView, View } from "react-native";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { Switch, Text, TextInput, useTheme } from "react-native-paper";
+import { Card, CardRow } from "@/components/ui/Card";
+import { AsyncActionButton, type AsyncButtonState } from "@/components/ui/AsyncActionButton";
+import { customerFormSchema, type CustomerFormValues } from "./schema";
+
+type Props = {
+  defaultValues: CustomerFormValues;
+  onSubmit: (values: CustomerFormValues) => void;
+  submitLabel: string;
+  isSubmitting?: boolean;
+  footer?: React.ReactNode;
+};
+
+/**
+ * Every bare field inside a Card/CardRow uses this same "flat, borderless"
+ * Paper TextInput styling — see PasswordInput.tsx for why. `underlineColor`
+ * stays transparent so the field is borderless at rest, but
+ * `activeUnderlineColor` is deliberately left unset (not "transparent")
+ * rather than the field having no focus state at all: Paper reuses that
+ * same color for the text cursor/selection highlight, not just the
+ * underline, so forcing it to "transparent" made the caret itself invisible
+ * while typing — the field looked broken, not just borderless. Leaving it
+ * unset falls through to the theme's `primary` (the logo teal), so focus
+ * shows a real teal underline + a visible cursor, same as any other Paper
+ * field, while staying borderless when not focused.
+ */
+const bareInputProps = {
+  mode: "flat" as const,
+  underlineColor: "transparent",
+  placeholderTextColor: "#b8b8bc",
+  contentStyle: { paddingHorizontal: 0 },
+  style: { backgroundColor: "transparent" },
+};
+
+/**
+ * Shared between the "on the fly" quick-add (app/customer/new.tsx, reached
+ * mid invoice-create — Nota's core 30-second promise means this can't ask
+ * for more than it needs) and the standalone Klanten list add/edit flow.
+ * Address/notes stay behind an optional "meer details" disclosure so the
+ * on-the-fly path is never slowed down by fields nobody needs to fill in
+ * at the job site, while the full record is still one tap away for anyone
+ * who wants it (e.g. editing later from the Klanten screen).
+ */
+export function CustomerForm({ defaultValues, onSubmit, submitLabel, isSubmitting, footer }: Props) {
+  const theme = useTheme();
+  const [showMore, setShowMore] = useState(
+    Boolean(defaultValues.address || defaultValues.postcode || defaultValues.city || defaultValues.notes),
+  );
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues,
+    mode: "onBlur",
+  });
+
+  const name = useWatch({ control, name: "name" });
+  const isBusiness = useWatch({ control, name: "isBusiness" });
+  const canSave = (name ?? "").trim().length > 0;
+
+  function submit() {
+    void handleSubmit(onSubmit)();
+  }
+
+  return (
+    <View className="flex-1 bg-bg">
+      <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+        <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginBottom: 8 }}>
+          Klantgegevens
+        </Text>
+        <Card>
+          <CardRow>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <TextInput
+                  {...bareInputProps}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder="Naam klant"
+                  className="flex-1"
+                  accessibilityLabel="Naam van de klant"
+                />
+              )}
+            />
+          </CardRow>
+          <CardRow isLast>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field }) => (
+                <TextInput
+                  {...bareInputProps}
+                  value={field.value ?? ""}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder="E-mailadres (optioneel)"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className="flex-1"
+                  accessibilityLabel="E-mailadres van de klant"
+                />
+              )}
+            />
+          </CardRow>
+        </Card>
+        {errors.email ? (
+          <Text variant="bodySmall" style={{ color: theme.colors.error, marginLeft: 4, marginTop: 6 }}>
+            {errors.email.message}
+          </Text>
+        ) : null}
+
+        <Text
+          variant="labelMedium"
+          style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginTop: 20, marginBottom: 8 }}
+        >
+          Type klant
+        </Text>
+        <Card>
+          <CardRow isLast={!isBusiness}>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+              Zakelijke klant (B2B)
+            </Text>
+            <Controller
+              control={control}
+              name="isBusiness"
+              render={({ field }) => (
+                <Switch
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  accessibilityLabel="Zakelijke klant"
+                />
+              )}
+            />
+          </CardRow>
+          {isBusiness ? (
+            <>
+              <CardRow>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                  KVK-nummer
+                </Text>
+                <Controller
+                  control={control}
+                  name="kvkNummer"
+                  render={({ field }) => (
+                    <TextInput
+                      {...bareInputProps}
+                      value={field.value ?? ""}
+                      onChangeText={field.onChange}
+                      placeholder="12345678"
+                      keyboardType="number-pad"
+                      className="w-32"
+                      style={[bareInputProps.style, { textAlign: "right" }]}
+                      accessibilityLabel="KVK-nummer"
+                    />
+                  )}
+                />
+              </CardRow>
+              <CardRow isLast>
+                <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                  BTW-nummer
+                </Text>
+                <Controller
+                  control={control}
+                  name="btwNummer"
+                  render={({ field }) => (
+                    <TextInput
+                      {...bareInputProps}
+                      value={field.value ?? ""}
+                      onChangeText={field.onChange}
+                      placeholder="NL123456789B01"
+                      autoCapitalize="characters"
+                      className="w-40"
+                      style={[bareInputProps.style, { textAlign: "right" }]}
+                      accessibilityLabel="BTW-nummer"
+                    />
+                  )}
+                />
+              </CardRow>
+            </>
+          ) : null}
+        </Card>
+        {!isBusiness ? (
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginTop: 8, lineHeight: 16 }}>
+            Voor particuliere klanten (B2C) zijn KVK- en BTW-nummer niet verplicht op de factuur.
+          </Text>
+        ) : null}
+
+        <Pressable
+          onPress={() => setShowMore((v) => !v)}
+          accessibilityRole="button"
+          accessibilityLabel={showMore ? "Adresgegevens verbergen" : "Adresgegevens toevoegen"}
+          className="mt-5 min-h-11 flex-row items-center gap-1.5"
+        >
+          {showMore ? (
+            <ChevronUp color={theme.colors.primary} size={16} />
+          ) : (
+            <ChevronDown color={theme.colors.primary} size={16} />
+          )}
+          <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
+            {showMore ? "Minder details" : "Adres toevoegen (optioneel)"}
+          </Text>
+        </Pressable>
+
+        {showMore ? (
+          <Card className="mt-2">
+            <CardRow>
+              <Controller
+                control={control}
+                name="address"
+                render={({ field }) => (
+                  <TextInput
+                    {...bareInputProps}
+                    value={field.value ?? ""}
+                    onChangeText={field.onChange}
+                    placeholder="Straat en huisnummer"
+                    className="flex-1"
+                    accessibilityLabel="Straat en huisnummer"
+                  />
+                )}
+              />
+            </CardRow>
+            <CardRow>
+              <Controller
+                control={control}
+                name="postcode"
+                render={({ field }) => (
+                  <TextInput
+                    {...bareInputProps}
+                    value={field.value ?? ""}
+                    onChangeText={field.onChange}
+                    placeholder="Postcode"
+                    autoCapitalize="characters"
+                    className="flex-1"
+                    accessibilityLabel="Postcode"
+                  />
+                )}
+              />
+            </CardRow>
+            <CardRow isLast>
+              <Controller
+                control={control}
+                name="city"
+                render={({ field }) => (
+                  <TextInput
+                    {...bareInputProps}
+                    value={field.value ?? ""}
+                    onChangeText={field.onChange}
+                    placeholder="Plaats"
+                    className="flex-1"
+                    accessibilityLabel="Plaats"
+                  />
+                )}
+              />
+            </CardRow>
+          </Card>
+        ) : null}
+
+        {footer}
+      </ScrollView>
+
+      <View className="px-4 pb-6 pt-2">
+        <AsyncActionButton
+          state={(isSubmitting ? "sending" : canSave ? "idle" : "disabled") as AsyncButtonState}
+          label={submitLabel}
+          accessibilityLabel={submitLabel}
+          onPress={submit}
+        />
+      </View>
+    </View>
+  );
+}

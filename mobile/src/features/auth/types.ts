@@ -31,3 +31,13 @@ export type AuthActionResult = {
   data: { user: AuthUser | null; session: AuthSession | null };
   error: AuthError | null;
 };
+
+export type PasswordResetRequestResult = {
+  data: { sent: boolean };
+  error: AuthError | null;
+};
+
+export type PasswordResetResult = {
+  data: { success: boolean };
+  error: AuthError | null;
+};

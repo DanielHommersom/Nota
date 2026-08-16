@@ -1,5 +1,5 @@
 import { clearStoredSession, loadStoredSession, storeSession } from "./authStorage";
-import type { AuthActionResult, AuthUser } from "./types";
+import type { AuthActionResult, AuthUser, PasswordResetRequestResult, PasswordResetResult } from "./types";
 
 /**
  * Mock auth layer — no real backend exists yet (Supabase project isn't
@@ -80,4 +80,38 @@ export async function getSession() {
 export async function signOut(): Promise<{ error: null }> {
   await clearStoredSession();
   return { error: null };
+}
+
+/**
+ * Real Supabase equivalent: `supabase.auth.resetPasswordForEmail`. Always
+ * reports success for a valid-looking address (except the "offline" test
+ * hook) — deliberately not revealing whether the address has an account,
+ * which is also correct security practice for a real implementation, not
+ * just a mock-layer shortcut.
+ */
+export async function requestPasswordReset({ email }: { email: string }): Promise<PasswordResetRequestResult> {
+  await delay(MOCK_NETWORK_DELAY_MS);
+
+  if (email.toLowerCase().includes("offline")) {
+    return {
+      data: { sent: false },
+      error: { code: "network_error", message: "Geen verbinding. Controleer je internet en probeer het opnieuw." },
+    };
+  }
+
+  return { data: { sent: true }, error: null };
+}
+
+/** Real Supabase equivalent: `supabase.auth.updateUser({ password })` after following the emailed reset link. */
+export async function resetPassword({ password }: { password: string }): Promise<PasswordResetResult> {
+  await delay(MOCK_NETWORK_DELAY_MS);
+
+  if (password.toLowerCase().includes("offline")) {
+    return {
+      data: { success: false },
+      error: { code: "network_error", message: "Geen verbinding. Controleer je internet en probeer het opnieuw." },
+    };
+  }
+
+  return { data: { success: true }, error: null };
 }

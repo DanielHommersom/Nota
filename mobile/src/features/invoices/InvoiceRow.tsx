@@ -5,6 +5,7 @@ import type { Invoice } from "./types";
 
 const STATUS_LABEL: Record<Invoice["status"], string> = {
   draft: "Concept",
+  queued: "In wachtrij",
   sending: "Bezig met verzenden",
   sent: "Verstuurd",
   failed: "Mislukt",
@@ -12,6 +13,7 @@ const STATUS_LABEL: Record<Invoice["status"], string> = {
 
 const STATUS_COLOR: Record<Invoice["status"], string> = {
   draft: "text-muted",
+  queued: "text-accent",
   sending: "text-accent",
   sent: "text-success",
   failed: "text-warn",
