@@ -80,6 +80,7 @@ export function CustomerPickerSheet({ visible, customers, onSelect, onCreateNew,
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
           ListEmptyComponent={
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, textAlign: "center", paddingVertical: 16 }}>
               Geen klanten gevonden.

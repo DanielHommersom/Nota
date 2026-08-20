@@ -67,7 +67,7 @@ export function AppDrawerContent(props: DrawerContentComponentProps) {
     : "";
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={{ flexGrow: 1, paddingTop: 0 }}>
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flexGrow: 1 }}>
       <View className="flex-1">
         <View className="flex-row items-start justify-between border-b border-border px-4 pb-4 pt-2">
           <Pressable

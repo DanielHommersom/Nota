@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Switch, Text, TextInput, useTheme } from "react-native-paper";
@@ -93,8 +93,13 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
   }
 
   return (
-    <View className="flex-1 bg-bg">
-      <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView className="flex-1 bg-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         {introCopy ? (
           <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 4 }}>
             {introCopy}
@@ -320,6 +325,6 @@ export function CompanyProfileForm({ defaultValues, onSubmit, submitLabel, isSub
           onPress={submit}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

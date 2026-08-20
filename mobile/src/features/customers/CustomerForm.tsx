@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from "react-native";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
@@ -85,8 +85,13 @@ export function CustomerForm({ defaultValues, onSubmit, submitLabel, isSubmittin
   }
 
   return (
-    <View className="flex-1 bg-bg">
-      <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView className="flex-1 bg-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginBottom: 8 }}>
           Klantgegevens
         </Text>
@@ -291,6 +296,6 @@ export function CustomerForm({ defaultValues, onSubmit, submitLabel, isSubmittin
           onPress={submit}
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

@@ -5,7 +5,7 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HeaderButton } from "expo-router/react-navigation";
 import { Check, ChevronRight, Plus, Trash2, WifiOff } from "lucide-react-native";
-import { Button, List, Text, useTheme } from "react-native-paper";
+import { Button, List, Portal, Text, useTheme } from "react-native-paper";
 
 import { Card, CardRow } from "@/components/ui/Card";
 import { AsyncActionButton, type AsyncButtonState } from "@/components/ui/AsyncActionButton";
@@ -362,6 +362,18 @@ export default function InvoiceCreateScreen() {
   }
 
   return (
+    // Paper's <Portal> (used by CustomerPickerSheet's <Modal>) always
+    // teleports to the nearest Portal.Host, falling back to the app-root
+    // one PaperProvider registers implicitly. This screen is presented as
+    // a native modal (`presentation: "modal"` in app/_layout.tsx's
+    // Stack.Screen options), which is its own separate native view
+    // hierarchy stacked on top of the whole app — so a Portal that
+    // resolves to the app-root host renders *behind* this modal instead of
+    // inside it. A local Portal.Host here gives CustomerPickerSheet
+    // somewhere correct to teleport to that's actually part of this
+    // modal's own layer, fixing "kies een klant" opening a sheet that's
+    // stuck behind the screen.
+    <Portal.Host>
     <KeyboardAvoidingView className="flex-1 bg-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <Stack.Screen
         options={{
@@ -378,7 +390,12 @@ export default function InvoiceCreateScreen() {
 
       {sendOutcome === "failed" ? <StatusBanner kind="failed" onRetry={submitInvoice} /> : null}
 
-      <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4, marginBottom: 8 }}>
           Klant
         </Text>
@@ -508,5 +525,6 @@ export default function InvoiceCreateScreen() {
         onCancel={() => setDeleteDraftVisible(false)}
       />
     </KeyboardAvoidingView>
+    </Portal.Host>
   );
 }

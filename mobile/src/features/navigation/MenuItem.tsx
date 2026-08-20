@@ -31,10 +31,10 @@ export function MenuItem({ icon: Icon, label, onPress, active = false, tone = "d
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected: active }}
-      className={`mb-1 min-h-11 flex-row items-center gap-3 rounded-control px-3 ${active ? "bg-accent-soft" : ""}`}
+      className={`mb-1 min-h-12 flex-row items-center gap-3 rounded-control px-3 py-1 ${active ? "bg-accent-soft" : ""}`}
     >
-      <Icon color={iconColor} size={20} strokeWidth={active ? 2.25 : 2} />
-      <Text className={`text-[15px] ${active ? "font-semibold" : "font-medium"} ${textColorClass}`}>{label}</Text>
+      <Icon color={iconColor} size={22} strokeWidth={active ? 2.25 : 2} />
+      <Text className={`text-[16px] ${active ? "font-semibold" : "font-medium"} ${textColorClass}`}>{label}</Text>
     </Pressable>
   );
 }
